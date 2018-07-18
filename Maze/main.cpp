@@ -2,34 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <Windows.h>
-#include<vector>
 #include<iostream>
-#include<mutex>
 #include<thread>
 #include"Maze.h"
-#include<memory>
 #include <GLFW/glfw3.h>
 #include <gl/GL.h>
 
 GLFWwindow* window;
 
 
-std::vector<int*> vertex;
-
-void changeColor(int &x, int &y, int &z)
-{
-	x = !x;
-	y = !y;
-	z = !z;
-}
-
-
-void render_loop(int addI,int addJ,std::mutex &mtx)
-{
-
-
-
-}
 
 /* program entry */
 int main(int argc, char *argv[])
@@ -48,7 +29,7 @@ int main(int argc, char *argv[])
 	}
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	window = glfwCreateWindow(700, 700, "Maze", NULL, NULL);
+	window = glfwCreateWindow(700, 700, "LearnOpenGL", NULL, NULL);
 	if (!window)
 	{
 		fprintf(stderr, "Failed to open GLFW window\n");

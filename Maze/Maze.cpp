@@ -5,7 +5,6 @@
 #include<thread>
 #include<Windows.h>
 #include<vector>
-#include <mutex>
 
 Maze::Maze() :widthOfGrid(40), heightOfGrid(40), start{ 0,0 }, end{ 0,0 },direction(Direction::NONE)
 {
@@ -45,7 +44,7 @@ bool Maze::NodeHasUnvisitedNeighbours(int height,int width)
 void Maze::CreatePassage(int height, int width)
 {
 
-	Sleep(2);//little delay to see creating
+	Sleep(3);//little delay to see creating
 	grid[height][width].colors[0] = 1.0f;
 	grid[height][width].colors[1] = 1.0f;
 	grid[height][width].colors[2] = 1.0f;
@@ -160,9 +159,9 @@ void Maze::CreateMaze()
 
 	end[0] = std::rand() % heightOfGrid;
 	end[1] = widthOfGrid - 1;
-	grid[end[0]][end[1]].wall[2] = false;//removing right wall from end cell
 
-	Sleep(5);
+	grid[end[0]][end[1]].wall[2] = false;//removing right wall from end cell
+	Sleep(1000);
 
 	ResolveMaze();//start resolving
 
@@ -171,6 +170,7 @@ void Maze::CreateMaze()
 
 Maze::Direction Maze::FindWay(int x,int y) {
 
+	Sleep(1);
 	bool xLessThanZero = false;
 	bool yLessThanZero = false;
 	bool xGreaterThanRange = false;
@@ -269,7 +269,6 @@ void Maze::DrawMaze()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLineWidth(2.5);
-	//glColor3f(1.0, 0.0, 0.0);
 	
 	//variables used to draw grid properly 
 	int drawHeight = 10;

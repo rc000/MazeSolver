@@ -1,6 +1,5 @@
 #pragma once
 #include<stack>
-#include<thread>
 #include<vector>
 
 class Maze {
