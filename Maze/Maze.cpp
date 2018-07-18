@@ -171,22 +171,7 @@ void Maze::CreateMaze()
 Maze::Direction Maze::FindWay(int x,int y) {
 
 	Sleep(1);
-	bool xLessThanZero = false;
-	bool yLessThanZero = false;
-	bool xGreaterThanRange = false;
-	bool yGreaterThanRange = false;
 
-	if (x + 1 >= heightOfGrid)
-		xGreaterThanRange = true;
-	else if (x - 1 < 0)
-		xLessThanZero = true;
-
-	if (y + 1 >= widthOfGrid)
-	{
-		yGreaterThanRange = true;
-	}
-	else if (y - 1 < 0)
-		yLessThanZero = true;
 
 
 	if ((!grid[x][y].wall[2]) && (y + 1 < widthOfGrid) && (grid[x][y + 1].visitedDuring!=Node::VisitedDuring::RESOLVING))
