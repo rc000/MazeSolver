@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 	}
 
 
+	
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 

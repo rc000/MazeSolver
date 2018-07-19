@@ -1,6 +1,7 @@
 #pragma once
 #include<stack>
 #include<vector>
+#include<utility>
 
 class Maze {
 public:
@@ -30,28 +31,32 @@ private:
 
 		VisitedDuring visitedDuring;
 
-		float colors[3];
+		enum class Color {
+			RED,
+			BLUE,
+			BLACK,
+			NONE
+		};
+		int distanceToExit;
+		Color color;
 		int pointSize;
 		int x;
 		int y;
-		Node() : pointSize(10), colors{ 1.0f,0.0f,0.0f },x(0),y(0), visitedDuring(VisitedDuring::UNVISITED)
+		Node() : pointSize(10),x(0),y(0), visitedDuring(VisitedDuring::UNVISITED),color(Color::RED),wall{true,true,true,true},distanceToExit(0)
 		{
-			for (int i = 0; i < 4; i++)
-				wall[i] = true;
+	
 		}
 
 
 	};
-	int start[2];
-	int end[2];
+	std::pair<int, int> start;
+	std::pair<int, int> end;
+
+
 	int widthOfGrid,heightOfGrid;
 	Direction direction;
 	std::vector<std::vector<Node> >grid;
 	std::stack<Node> recentlyVisitedNodes;
-
-
-
-	
 
 
 };

@@ -4,15 +4,17 @@
 #include <gl/GL.h>
 #include<thread>
 #include<Windows.h>
+#include<math.h>
 #include<vector>
 
-Maze::Maze() :widthOfGrid(40), heightOfGrid(40), start{ 0,0 }, end{ 0,0 },direction(Direction::NONE)
+Maze::Maze() :widthOfGrid(40), heightOfGrid(40),direction(Direction::NONE),start(std::make_pair(0,0)), end(std::make_pair(heightOfGrid-1, widthOfGrid-1))
 {
 
 	grid.reserve(heightOfGrid);
 	for (size_t i = 0; i < heightOfGrid; ++i) {
 		grid.emplace_back(std::vector<Node>(widthOfGrid));
 	}
+
 }
 
 Maze::~Maze()
@@ -44,10 +46,9 @@ bool Maze::NodeHasUnvisitedNeighbours(int height,int width)
 void Maze::CreatePassage(int height, int width)
 {
 
-	Sleep(3);//little delay to see creating
-	grid[height][width].colors[0] = 1.0f;
-	grid[height][width].colors[1] = 1.0f;
-	grid[height][width].colors[2] = 1.0f;
+	//Sleep(3);//little delay to see creating
+	grid[height][width].color = Node::Color::NONE;
+	grid[height][width].distanceToExit = std::abs(end.first - height) + std::abs(end.second- width);
 
 	if(NodeHasUnvisitedNeighbours(height,width)==false)
 	{
@@ -125,7 +126,7 @@ void Maze::CreatePassage(int height, int width)
 		
 
 
-			grid[height][width].wall[direction] = false;//implicit conversion, enum to int
+			grid[height][width].wall[direction] = false;//implicit conversion, enum direction to int
 			grid[height][width].visitedDuring = Node::VisitedDuring::CREATING;
 
 			grid[height][width].x = height;
@@ -144,23 +145,23 @@ void Maze::CreatePassage(int height, int width)
 void Maze::CreateMaze()
 {
 
-
-
 	srand(time(NULL));
-	
-	int x = (std::rand() % heightOfGrid);
-	int y = (std::rand() % widthOfGrid);
 
+
+
+	start.first = std::rand() % heightOfGrid;
+	start.second = 0;
+	grid[start.first][start.second].wall[1] = false;//removing left wall from start cell
+
+	end.first = std::rand() % heightOfGrid;
+	end.second = widthOfGrid - 1;
+
+	grid[end.first][end.second].wall[2] = false;//removing right wall from end cell
 	CreatePassage(0, 0);
+	std::cout << "obok " << grid[end.first - 1][end.second].distanceToExit << std::endl;
+	std::cout << "na samej gorze " << grid[39][39].distanceToExit << std::endl;
+	std::cout << "na samym dole " << grid[0][39].distanceToExit << std::endl;
 
-	start[0] = std::rand() % heightOfGrid;
-	start[1] = 0;
-	grid[start[0]][start[1]].wall[1] = false;//removing left wall from start cell
-
-	end[0] = std::rand() % heightOfGrid;
-	end[1] = widthOfGrid - 1;
-
-	grid[end[0]][end[1]].wall[2] = false;//removing right wall from end cell
 	Sleep(1000);
 
 	ResolveMaze();//start resolving
@@ -170,55 +171,74 @@ void Maze::CreateMaze()
 
 Maze::Direction Maze::FindWay(int x,int y) {
 
-	Sleep(1);
+	Sleep(100);
 
-
+	std::pair<int, Direction> distance = std::make_pair(heightOfGrid+widthOfGrid+1, Direction::NONE);
 
 	if ((!grid[x][y].wall[2]) && (y + 1 < widthOfGrid) && (grid[x][y + 1].visitedDuring!=Node::VisitedDuring::RESOLVING))
 	{
 
-		return Direction::RIGHT;
+		if (grid[x][y+1].distanceToExit < distance.first)
+		{
+			distance.first = grid[x][y+1].distanceToExit;
+			distance.second= Direction::RIGHT;
+		}
 	
+
 	}
-	 else if ((!grid[x][y].wall[0]) && (x + 1 < heightOfGrid) && (grid[x + 1][y].visitedDuring != Node::VisitedDuring::RESOLVING))
+	  if ((!grid[x][y].wall[0]) && (x + 1 < heightOfGrid) && (grid[x + 1][y].visitedDuring != Node::VisitedDuring::RESOLVING))
 	{
 
-		 return Direction::UP;
-		
-	}
-	 else if ((!grid[x][y].wall[1]) && (y>=0) && (grid[x][y - 1].visitedDuring != Node::VisitedDuring::RESOLVING))
-	{
+		 if (grid[x+1][y].distanceToExit < distance.first)
+		 {
 
-		 return Direction::LEFT;
-		
+			 distance.first = grid[x+1][y].distanceToExit;
+			 distance.second = Direction::UP;
+		 }
 	}
-	 else if ((!grid[x][y].wall[3]) && (x>=0) && (grid[x - 1][y].visitedDuring != Node::VisitedDuring::RESOLVING))
-	{
-
-		 return Direction::DOWN;
-		
-	}
-	
-	 else
+	 if ((!grid[x][y].wall[3]) && (x > 0) && (grid[x - 1][y].visitedDuring != Node::VisitedDuring::RESOLVING))
 	 {
 
-		 return Direction::NONE;
+		 if (grid[x-1][y].distanceToExit < distance.first)
+		 {
+
+			 distance.first = grid[x-1][y].distanceToExit;
+			 distance.second = Direction::DOWN;
+		 }
+
+
 	 }
+	  if ((!grid[x][y].wall[1]) && (y>0) && (grid[x][y - 1].visitedDuring != Node::VisitedDuring::RESOLVING))
+	{
+
+
+		 if (grid[x][y-1].distanceToExit < distance.first)
+		 {
+
+			 distance.first = grid[x][y-1].distanceToExit;
+			 distance.second = Direction::LEFT;
+		 }
+
+	}
+
+
+	return distance.second;
+
 
 }
 void Maze::ResolveMaze()
 {
 
-	int x = start[0];
-	int y = start[1];
+	int x = start.first;
+	int y = start.second;
 
-	while (grid[end[0]][end[1]].visitedDuring!= Node::VisitedDuring::RESOLVING)// until end cell is not reached
+	while (grid[end.first][end.second].visitedDuring!= Node::VisitedDuring::RESOLVING)// until end cell is not reached
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		grid[x][y].visitedDuring = Node::VisitedDuring::RESOLVING;
-		grid[x][y].colors[0] = 1.0f;
-		grid[x][y].colors[1] = 0.0f;
-		grid[x][y].colors[2] = 1.0f;
+		grid[x][y].color = Node::Color::BLUE;
+
+
 		switch (FindWay(x, y))
 		{
 		case 0:
@@ -238,9 +258,9 @@ void Maze::ResolveMaze()
 			x--;//down
 			break;
 		case 4:
-			grid[x][y].colors[0] = 0.0f;
-			grid[x][y].colors[1] = 0.0f;
-			grid[x][y].colors[2] = 0.0f;
+			grid[x][y].color = Node::Color::BLACK;
+
+	
 			grid[x][y].pointSize = 4;
 			x = recentlyVisitedNodes.top().x;
 			y = recentlyVisitedNodes.top().y;
@@ -255,7 +275,6 @@ void Maze::DrawMaze()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glLineWidth(2.5);
 	
-	//variables used to draw grid properly 
 	int drawHeight = 10;
 	int drawWidth = 10;
 	int move = 15;
@@ -265,7 +284,21 @@ void Maze::DrawMaze()
 			for (int j = 0; j < heightOfGrid; ++j)
 			{
 					glPointSize(grid[i][j].pointSize);
-					glColor3f(grid[i][j].colors[0], grid[i][j].colors[1], grid[i][j].colors[2]);
+					switch (grid[i][j].color)
+					{
+					case Node::Color::RED:
+						glColor3f(1.0f, 0.0f, 0.0f);
+							break;
+					case Node::Color::BLACK:
+						glColor3f(0.0f, 0.0f, 0.0f);
+						break;
+					case Node::Color::BLUE:
+						glColor3f(1.0f, 0.0f, 1.0f);
+						break;
+					case Node::Color::NONE:
+						glColor3f(1.0f, 1.0f, 1.0f);
+						break;
+					}
 					glBegin(GL_POINTS);
 					glVertex3f(drawWidth + move / 2, drawHeight + move / 2, 0.0);
 					glEnd();
